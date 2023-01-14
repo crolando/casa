@@ -32,6 +32,7 @@
 		37188CEF296E22BD00D75781 /* imgui_tables.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3779BAA82936B87600AD8A46 /* imgui_tables.cpp */; };
 		37188CF0296E22BD00D75781 /* backend_io.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3779BA862936B54F00AD8A46 /* backend_io.cpp */; };
 		37188CF1296E22BD00D75781 /* imgui_canvas.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3779BA9D2936B56D00AD8A46 /* imgui_canvas.cpp */; };
+		37D3D6722973043B007D195D /* tinyfiledialogs.c in Sources */ = {isa = PBXBuildFile; fileRef = 37D3D6702973043A007D195D /* tinyfiledialogs.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -82,6 +83,8 @@
 		3779BAAA2936B87600AD8A46 /* imgui_draw.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = imgui_draw.cpp; path = "../imgui-node-editor/external/imgui/imgui_draw.cpp"; sourceTree = "<group>"; };
 		377E7442294A0543005615E4 /* internal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = internal.h; path = ../plano/include/internal/internal.h; sourceTree = "<group>"; };
 		37AE488A296B11F9005C4AD8 /* draw_triangle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = draw_triangle.h; sourceTree = "<group>"; };
+		37D3D6702973043A007D195D /* tinyfiledialogs.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = tinyfiledialogs.c; sourceTree = "<group>"; };
+		37D3D6712973043B007D195D /* tinyfiledialogs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tinyfiledialogs.h; sourceTree = "<group>"; };
 		37E92CAF29466EB8000C77AB /* imgui_node_editor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = imgui_node_editor.h; path = "../imgui-node-editor/imgui_node_editor.h"; sourceTree = "<group>"; };
 		37F0DB0F2941655800DC7360 /* include */ = {isa = PBXFileReference; lastKnownFileType = folder; name = include; path = ../plano/include; sourceTree = "<group>"; };
 		37F0DB1029417F3900DC7360 /* imgui.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = imgui.h; path = "../imgui-node-editor/external/imgui/imgui.h"; sourceTree = "<group>"; };
@@ -101,6 +104,8 @@
 		3779BA60292E7D1500AD8A46 = {
 			isa = PBXGroup;
 			children = (
+				37D3D6702973043A007D195D /* tinyfiledialogs.c */,
+				37D3D6712973043B007D195D /* tinyfiledialogs.h */,
 				3763B35B2965B24000EBF9BB /* save_load_file.h */,
 				377E7442294A0543005615E4 /* internal.h */,
 				37F0DB0F2941655800DC7360 /* include */,
@@ -235,6 +240,7 @@
 				37188CEF296E22BD00D75781 /* imgui_tables.cpp in Sources */,
 				37188CF0296E22BD00D75781 /* backend_io.cpp in Sources */,
 				37188CF1296E22BD00D75781 /* imgui_canvas.cpp in Sources */,
+				37D3D6722973043B007D195D /* tinyfiledialogs.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

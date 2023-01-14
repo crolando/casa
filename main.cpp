@@ -9,8 +9,10 @@
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
 #include "imgui_impl_opengl3.h"
+#include "tinyfiledialogs.h"
 #include <stdio.h>
 #include <SDL.h>
+#include <iostream>
 
 // Glew is not used during ES use
 #ifdef IMGUI_IMPL_OPENGL_ES2
@@ -19,6 +21,8 @@
     #include "GL/glew.h" // must be included before opengl
     #include <SDL_opengl.h>
 #endif
+
+
 
 #include "draw_triangle.h"
 
@@ -41,6 +45,87 @@ std::unordered_map<GLuint, nodos_texture> texture_owner;
 #include "node_defs/blueprint_demo.h"
 #include "node_defs/widget_demo.h"
 
+// Thread stuff
+#include <thread>
+#include <future>
+// Deals with the situation where a "OS dialog (save file, load file)" blocks
+// the draw thread.
+template<typename R>
+  bool is_ready(std::future<R> const& f)
+  { return f.wait_for(std::chrono::seconds(0)) == std::future_status::ready; }
+
+
+// SDL event logger
+void PrintEvent(const SDL_Event * event)
+{
+    if (event->type == SDL_WINDOWEVENT) {
+        switch (event->window.event) {
+        case SDL_WINDOWEVENT_SHOWN:
+            SDL_Log("Window %d shown", event->window.windowID);
+            break;
+        case SDL_WINDOWEVENT_HIDDEN:
+            SDL_Log("Window %d hidden", event->window.windowID);
+            break;
+        case SDL_WINDOWEVENT_EXPOSED:
+            SDL_Log("Window %d exposed", event->window.windowID);
+            break;
+        case SDL_WINDOWEVENT_MOVED:
+            SDL_Log("Window %d moved to %d,%d",
+                    event->window.windowID, event->window.data1,
+                    event->window.data2);
+            break;
+        case SDL_WINDOWEVENT_RESIZED:
+            SDL_Log("Window %d resized to %dx%d",
+                    event->window.windowID, event->window.data1,
+                    event->window.data2);
+            break;
+        case SDL_WINDOWEVENT_SIZE_CHANGED:
+            SDL_Log("Window %d size changed to %dx%d",
+                    event->window.windowID, event->window.data1,
+                    event->window.data2);
+            break;
+        case SDL_WINDOWEVENT_MINIMIZED:
+            SDL_Log("Window %d minimized", event->window.windowID);
+            break;
+        case SDL_WINDOWEVENT_MAXIMIZED:
+            SDL_Log("Window %d maximized", event->window.windowID);
+            break;
+        case SDL_WINDOWEVENT_RESTORED:
+            SDL_Log("Window %d restored", event->window.windowID);
+            break;
+        case SDL_WINDOWEVENT_ENTER:
+            SDL_Log("Mouse entered window %d",
+                    event->window.windowID);
+            break;
+        case SDL_WINDOWEVENT_LEAVE:
+            SDL_Log("Mouse left window %d", event->window.windowID);
+            break;
+        case SDL_WINDOWEVENT_FOCUS_GAINED:
+            SDL_Log("Window %d gained keyboard focus",
+                    event->window.windowID);
+            break;
+        case SDL_WINDOWEVENT_FOCUS_LOST:
+            SDL_Log("Window %d lost keyboard focus",
+                    event->window.windowID);
+            break;
+        case SDL_WINDOWEVENT_CLOSE:
+            SDL_Log("Window %d closed", event->window.windowID);
+            break;
+#if SDL_VERSION_ATLEAST(2, 0, 5)
+        case SDL_WINDOWEVENT_TAKE_FOCUS:
+            SDL_Log("Window %d is offered a focus", event->window.windowID);
+            break;
+        case SDL_WINDOWEVENT_HIT_TEST:
+            SDL_Log("Window %d has a special hit test", event->window.windowID);
+            break;
+#endif
+        default:
+            SDL_Log("Window %d got unknown event %d",
+                    event->window.windowID, event->window.event);
+            break;
+        }
+    }
+}
 
 // Implement Callbacks
 ImTextureID NodosLoadTexture(const char* path)
@@ -257,6 +342,11 @@ int main(int, char**)
 
     // Main draw loop
     bool done = false;
+    bool waiting_on_save_dialog = false;
+    bool waiting_on_load_dialog = false;
+    std::future<char*> load_file_future, save_file_future;
+    // handle load/save child processes
+    static const char *filter_extensions[1] = {"*.csa"};
     while (!done)
     {
         // Poll and handle events (inputs, window resize, etc.)
@@ -268,12 +358,43 @@ int main(int, char**)
         while (SDL_PollEvent(&event))
         {
             ImGui_ImplSDL2_ProcessEvent(&event);
+            PrintEvent(&event);
             if (event.type == SDL_QUIT)
                 done = true;
             if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(window))
                 done = true;
+            
         }
 
+        if (waiting_on_load_dialog)
+        {
+            printf("waiting for load is true...\n");
+            if(!load_file_future.valid())
+            {
+                printf("staring async load\n");
+                load_file_future = std::async(
+                                              tinyfd_openFileDialog,"Load the Casa Project",nullptr, 1, filter_extensions, "Casa Project", 0
+                                              );
+                
+                std::cout << "past the load async call\n" << std::endl;
+                //auto load_file_address = tinyfd_openFileDialog("Load the Casa Project",nullptr, 1, filter_extensions, "Casa Project", 0);
+                //if (load_file_address)
+                // load_project_file(load_file_address);
+            }
+            printf("about to check for future readyness\n");
+            if(is_ready(load_file_future))
+            {
+                printf("future ready\n");
+                load_project_file(load_file_future.get());
+                //printf("load complete\n");
+                waiting_on_load_dialog = false;
+            } else {
+                printf("future not ready\n");
+                continue; // don't render this frame
+            }
+        }
+    
+        
         // Render Triangle ~~~~
         
         glUseProgram(program); // Use our shader.
@@ -294,8 +415,42 @@ int main(int, char**)
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplSDL2_NewFrame(window);
         ImGui::NewFrame();
+        
+        // Menu bar
+        if (ImGui::BeginMainMenuBar())
+        {
+            if (ImGui::BeginMenu("File"))
+            {
+                if (ImGui::MenuItem("New"), "Ctrl + N") {}
+                if (ImGui::MenuItem("Load"))
+                {
+                    waiting_on_load_dialog = true;
+                }
+                if (ImGui::MenuItem("Save"))
+                {
+                    
+                    auto save_file_address = tinyfd_saveFileDialog("Save the Casa Project","my_project.csa", 1, filter_extensions,"Casa Project");
+                    if (save_file_address)
+                        save_project_file(save_file_address);
+                }
+                if (ImGui::MenuItem("Save As")) {}
+                ImGui::Separator();
+                if (ImGui::MenuItem("Quit", "Alt+F4")) {}
+                ImGui::EndMenu();
+            }
+            ImGui::EndMainMenuBar();
+        }
 
-
+        
+        // if we're in a dialog, don't let the user mess with stuff
+        if(waiting_on_load_dialog || waiting_on_save_dialog) {
+            SDL_SetWindowAlwaysOnTop(window, SDL_FALSE);
+            SDL_SetWindowKeyboardGrab(window, SDL_FALSE);
+        } else {
+            SDL_SetWindowAlwaysOnTop(window, SDL_TRUE);
+            SDL_SetWindowKeyboardGrab(window, SDL_TRUE);
+        }
+        
         // 1. Show the active plano node graph window context
         plano::api::Frame();
         
@@ -344,6 +499,8 @@ int main(int, char**)
         glClear(GL_COLOR_BUFFER_BIT);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         SDL_GL_SwapWindow(window);
+        
+        
     } // End of draw loop.  Shutdown requested beyond here...
 
     // Write save file from active context
