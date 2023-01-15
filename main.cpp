@@ -385,8 +385,13 @@ int main(int, char**)
             if(is_ready(load_file_future))
             {
                 printf("future ready\n");
-                load_project_file(load_file_future.get());
-                //printf("load complete\n");
+                const char* load_file = load_file_future.get();
+                if (load_file) {
+                    load_project_file(load_file_future.get());
+                    //printf("load complete\n");
+                } else {
+                  //printf("Load was cancelled");  
+                }                
                 waiting_on_load_dialog = false;
             } else {
                 printf("future not ready\n");
