@@ -407,3 +407,5 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+imgui.ini
+nodos_project_a.txt
