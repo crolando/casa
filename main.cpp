@@ -387,7 +387,7 @@ int main(int, char**)
                 printf("future ready\n");
                 const char* load_file = load_file_future.get();
                 if (load_file) {
-                    load_project_file(load_file_future.get());
+                    load_project_file(load_file);
                     //printf("load complete\n");
                 } else {
                   //printf("Load was cancelled");  
