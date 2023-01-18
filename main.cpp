@@ -292,40 +292,57 @@ int main(int, char**)
                 done = true;
             
         }
-
-        if (waiting_on_load_dialog)
+        
+        // This bool tracks the "You told me to load, but you have unsaved changes" modal.
+        // deferred modal popup bool.  see https://github.com/ocornut/imgui/issues/331
+        static bool savechallange = false; // initialize with false. this does not do an assignment every frame.
+        
+        // Save dialog handling.  This spawns a new window, so it does some parallel processing stuff
+        // Save / load behavior is complex to handle the case where you choose "load", but you have unsaved changes.
+        if (waiting_on_save_dialog)
         {
-            printf("waiting for load is true...\n");
+            // Launch the save dialog
+            if(!save_file_future.valid())
+            {
+                save_file_future = std::async(tinyfd_saveFileDialog,"Save the Casa Project",nullptr, 1, filter_extensions, "Casa Project");
+            }
+            // Wait until the save dialog interactions are done.
+            if(is_ready(save_file_future))
+            {
+                const char* save_file = save_file_future.get();
+                if (save_file) {
+                    save_project_file(save_file);
+                    plano::api::ClearProjectDirtyFlag();
+                } else {
+                    ; // Save was cancelled in the save dialog
+                }
+                // Book keeping
+                waiting_on_save_dialog = false;
+                if(savechallange){
+                    ImGui::CloseCurrentPopup();
+                    savechallange = false;
+                }
+            }
+        }
+        // Load dialog handling.  This spawns a new window, so it does some parallel processing stuff
+        if (waiting_on_load_dialog && !waiting_on_save_dialog)
+        {
             if(!load_file_future.valid())
             {
-                printf("staring async load\n");
-                load_file_future = std::async(
-                                              tinyfd_openFileDialog,"Load the Casa Project",nullptr, 1, filter_extensions, "Casa Project", 0
-                                              );
-                
-                std::cout << "past the load async call\n" << std::endl;
-                //auto load_file_address = tinyfd_openFileDialog("Load the Casa Project",nullptr, 1, filter_extensions, "Casa Project", 0);
-                //if (load_file_address)
-                // load_project_file(load_file_address);
+                load_file_future = std::async(tinyfd_openFileDialog,"Load the Casa Project",nullptr, 1, filter_extensions, "Casa Project", 0);
             }
-            printf("about to check for future readyness\n");
             if(is_ready(load_file_future))
             {
-                printf("future ready\n");
                 const char* load_file = load_file_future.get();
                 if (load_file) {
                     load_project_file(load_file);
-                    //printf("load complete\n");
                 } else {
-                  //printf("Load was cancelled");  
-                }                
+                    ; // load cancelled in UI
+                }
+                // Book keeping
                 waiting_on_load_dialog = false;
-            } else {
-                printf("future not ready\n");
-                continue; // don't render this frame
             }
         }
-    
         
         // Render Triangle ~~~~
         
@@ -342,13 +359,14 @@ int main(int, char**)
         
         // render to screen from here on...
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
+        
         // Start the Dear ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplSDL2_NewFrame(window);
         ImGui::NewFrame();
         
         // Menu bar
+
         if (ImGui::BeginMainMenuBar())
         {
             if (ImGui::BeginMenu("File"))
@@ -356,7 +374,16 @@ int main(int, char**)
                 if (ImGui::MenuItem("New"), "Ctrl + N") {}
                 if (ImGui::MenuItem("Load"))
                 {
-                    waiting_on_load_dialog = true;
+                    
+                    // if a load was requested, but the current session is not saved... it must trigger a save challange.
+                    if(plano::api::IsProjectDirty())
+                    {
+                        // defer popup to resolve popup stack issues
+                        // see https://github.com/ocornut/imgui/issues/331
+                        savechallange = true;
+                    } else {
+                        waiting_on_load_dialog = true;
+                    }
                 }
                 if (ImGui::MenuItem("Save"))
                 {
@@ -372,16 +399,49 @@ int main(int, char**)
             }
             ImGui::EndMainMenuBar();
         }
+        
+        // Draw modal window when the user chooses "load", but has unsaved changes.
+        // handle menu popups after menus are closed.
+        // see https://github.com/ocornut/imgui/issues/331
+        if(savechallange)
+        {
+            savechallange = false;
+            ImGui::OpenPopup("SaveChallange");
+            // Always center this window when appearing
+            ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+            ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+        }
+        if (ImGui::BeginPopupModal("SaveChallange", NULL, ImGuiWindowFlags_None))
+        {
+            ImGui::Text("Before you load a new project, would you like to save the current changes?");
+            if (ImGui::Button("Save First"))
+            {
+                // The logic for this is kind of spaghetti.  This will draw this frame, but will hit the save
+                // before the next frame.  The save always happens before loads, so it will chain the load
+                // after completing the save.
+                waiting_on_save_dialog = true;
+                // Note that if waiting_on_save_dialog == true too, this will chain save  + load sequentially.
+                waiting_on_load_dialog = true;
+                ImGui::CloseCurrentPopup(); // close challange
+                }
+            if (ImGui::Button("Ditch Project"))
+            {
+                waiting_on_load_dialog = true; // strictly not needed.
+                waiting_on_save_dialog = false;
+                ImGui::CloseCurrentPopup(); // close challange
+            }
+            ImGui::EndPopup();
+        }
 
         
         // if we're in a dialog, don't let the user mess with stuff
-        if(waiting_on_load_dialog || waiting_on_save_dialog) {
+        /*if(waiting_on_load_dialog || waiting_on_save_dialog) {
             SDL_SetWindowAlwaysOnTop(window, SDL_FALSE);
             SDL_SetWindowKeyboardGrab(window, SDL_FALSE);
         } else {
             SDL_SetWindowAlwaysOnTop(window, SDL_TRUE);
             SDL_SetWindowKeyboardGrab(window, SDL_TRUE);
-        }
+        }*/
         
         // 1. Show the active plano node graph window context
         plano::api::Frame();
@@ -423,7 +483,8 @@ int main(int, char**)
                 show_another_window = false;
             ImGui::End();
         }
-
+        
+        render:
         // Rendering 
         ImGui::Render();
         glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
