@@ -121,6 +121,22 @@ unsigned int NodosGetTextureHeight(ImTextureID texture)
     return texture_owner[gid].dim_y;
 }
 
+void RegiserNodesToActiveContext()
+{
+    // Register node types to the context that is "active"
+    plano::api::RegisterNewNode(node_defs::blueprint_demo::InputActionFire::ConstructDefinition());
+    plano::api::RegisterNewNode(node_defs::blueprint_demo::OutputAction::ConstructDefinition());
+    plano::api::RegisterNewNode(node_defs::blueprint_demo::Branch::ConstructDefinition());
+    plano::api::RegisterNewNode(node_defs::blueprint_demo::DoN::ConstructDefinition());
+    plano::api::RegisterNewNode(node_defs::blueprint_demo::SetTimer::ConstructDefinition());
+    plano::api::RegisterNewNode(node_defs::blueprint_demo::SingleLineTraceByChannel::ConstructDefinition());
+    plano::api::RegisterNewNode(node_defs::blueprint_demo::PrintString::ConstructDefinition());
+    plano::api::RegisterNewNode(node_defs::import_animal::ConstructDefinition());
+    plano::api::RegisterNewNode(node_defs::widget_demo::BasicWidgets::ConstructDefinition());
+    plano::api::RegisterNewNode(node_defs::widget_demo::TreeDemo::ConstructDefinition());
+    plano::api::RegisterNewNode(node_defs::widget_demo::PlotDemo::ConstructDefinition());
+}
+
 // Main 
 int main(int, char**)
 {
@@ -208,27 +224,8 @@ int main(int, char**)
     cbk.GetTextureHeight = NodosGetTextureHeight; // ...
     cbk.GetTextureWidth = NodosGetTextureWidth;
     
-    // Create a plano context
+    // We have to track our own contexts.  context_a will be the "loaded context", and can be null.
     plano::types::ContextData* context_a;
-    context_a = plano::api::CreateContext(cbk, "../plano/data/");
-    
-    // Make context_a the "active context"
-    // Note: you can have multple contexts. All plano::api calls after a "SetContext" affect that "active" context.
-    plano::api::SetContext(context_a);
-    
-    // Register node types to the context that is "active"
-    plano::api::RegisterNewNode(node_defs::blueprint_demo::InputActionFire::ConstructDefinition());
-    plano::api::RegisterNewNode(node_defs::blueprint_demo::OutputAction::ConstructDefinition());
-    plano::api::RegisterNewNode(node_defs::blueprint_demo::Branch::ConstructDefinition());
-    plano::api::RegisterNewNode(node_defs::blueprint_demo::DoN::ConstructDefinition());
-    plano::api::RegisterNewNode(node_defs::blueprint_demo::SetTimer::ConstructDefinition());
-    plano::api::RegisterNewNode(node_defs::blueprint_demo::SingleLineTraceByChannel::ConstructDefinition());
-    plano::api::RegisterNewNode(node_defs::blueprint_demo::PrintString::ConstructDefinition());
-    plano::api::RegisterNewNode(node_defs::import_animal::ConstructDefinition());
-    plano::api::RegisterNewNode(node_defs::widget_demo::BasicWidgets::ConstructDefinition());
-    plano::api::RegisterNewNode(node_defs::widget_demo::TreeDemo::ConstructDefinition());
-    plano::api::RegisterNewNode(node_defs::widget_demo::PlotDemo::ConstructDefinition());
-    load_project_file("nodos_project_a.txt"); // deserialize a project into this context (uses the nodes that were registered)
     
     // Variables to track sample window behaviors
     bool show_demo_window = true;
@@ -335,6 +332,13 @@ int main(int, char**)
             {
                 const char* load_file = load_file_future.get();
                 if (load_file) {
+                    if(context_a != nullptr)
+                    {
+                        plano::api::DestroyContext(context_a);
+                    }
+                    context_a = plano::api::CreateContext(cbk, "../plano/data/");
+                    plano::api::SetContext(context_a);
+                    RegiserNodesToActiveContext();
                     load_project_file(load_file);
                 } else {
                     ; // load cancelled in UI
@@ -374,15 +378,18 @@ int main(int, char**)
                 if (ImGui::MenuItem("New"), "Ctrl + N") {}
                 if (ImGui::MenuItem("Load"))
                 {
-                    
-                    // if a load was requested, but the current session is not saved... it must trigger a save challange.
-                    if(plano::api::IsProjectDirty())
-                    {
-                        // defer popup to resolve popup stack issues
-                        // see https://github.com/ocornut/imgui/issues/331
-                        savechallange = true;
-                    } else {
+                    if (plano::api::GetContext() == nullptr) {
                         waiting_on_load_dialog = true;
+                    } else {
+                        // if a load was requested, but the current session is not saved... it must trigger a save challange.
+                        if(plano::api::IsProjectDirty())
+                        {
+                            // defer popup to resolve popup stack issues
+                            // see https://github.com/ocornut/imgui/issues/331
+                            savechallange = true;
+                        } else {
+                            waiting_on_load_dialog = true;
+                        }
                     }
                 }
                 if (ImGui::MenuItem("Save"))
@@ -443,8 +450,9 @@ int main(int, char**)
             SDL_SetWindowKeyboardGrab(window, SDL_TRUE);
         }*/
         
-        // 1. Show the active plano node graph window context
-        plano::api::Frame();
+        // 1. Show the active plano node graph window context, if it exists
+        if (plano::api::GetContext() != nullptr)
+            plano::api::Frame();
         
         // 2. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
         if (show_demo_window)
@@ -495,13 +503,7 @@ int main(int, char**)
         
         
     } // End of draw loop.  Shutdown requested beyond here...
-
-    // Write save file from active context
-    save_project_file("nodos_project_a.txt");
-    
-
     // Cleanup
-    plano::api::DestroyContext(context_a);
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();

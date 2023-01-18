@@ -15,6 +15,8 @@
 // Loading will then affect the currently set context.
 void load_project_file(const char *file_address)
 {
+    assert(plano::api::GetContext() != nullptr); // Context was not empty before a load. Set context to null or destroy the old context first.
+    
     // Load the project file
     std::ifstream inf(file_address);
     std::stringstream ssbuf;
