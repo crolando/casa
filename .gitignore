@@ -409,3 +409,5 @@ FodyWeavers.xsd
 *.sln.iml
 imgui.ini
 nodos_project_a.txt
+*.xcuserstate
+*.xcbkptlist
