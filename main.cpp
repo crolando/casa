@@ -269,6 +269,8 @@ int main(int, char**)
     bool done = false;
     bool waiting_on_save_dialog = false;
     bool waiting_on_load_dialog = false;
+    bool just_loaded_ignore_dirty = false;
+    int frames_since_last_load = -1; // -1 means a load has not been triggered.
     std::future<char*> load_file_future, save_file_future;
     // handle load/save child processes
     static const char *filter_extensions[1] = {"*.csa"};
@@ -340,6 +342,8 @@ int main(int, char**)
                     plano::api::SetContext(context_a);
                     RegiserNodesToActiveContext();
                     load_project_file(load_file);
+                    just_loaded_ignore_dirty = true; // clear dirty flag after the 1st frame;
+                    frames_since_last_load = 0;
                 } else {
                     ; // load cancelled in UI
                 }
@@ -382,7 +386,8 @@ int main(int, char**)
                         waiting_on_load_dialog = true;
                     } else {
                         // if a load was requested, but the current session is not saved... it must trigger a save challange.
-                        if(plano::api::IsProjectDirty())
+                        // but because loading a file causes a dirty flag change, ignore it.
+                        if(plano::api::IsProjectDirty() && !just_loaded_ignore_dirty)
                         {
                             // defer popup to resolve popup stack issues
                             // see https://github.com/ocornut/imgui/issues/331
@@ -492,7 +497,6 @@ int main(int, char**)
             ImGui::End();
         }
         
-        render:
         // Rendering 
         ImGui::Render();
         glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
@@ -501,6 +505,18 @@ int main(int, char**)
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         SDL_GL_SwapWindow(window);
         
+        // Extremely stupid dirty flag management
+        // after loading, it can take several frames for the editor to stop passing messages to us.
+        // just wait a couple frames for things to calm down after a load.
+        // yes this is bad and dumb.
+        if (frames_since_last_load > -1) // Update
+            frames_since_last_load++;
+        
+        if (frames_since_last_load >4) { // Test
+            frames_since_last_load = -1;
+            just_loaded_ignore_dirty = false;
+            plano::api::ClearProjectDirtyFlag();
+        }
         
     } // End of draw loop.  Shutdown requested beyond here...
     // Cleanup
