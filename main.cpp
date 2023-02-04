@@ -271,6 +271,10 @@ int main(int, char**)
     bool waiting_on_load_dialog = false;
     bool just_loaded_ignore_dirty = false;
     int frames_since_last_load = -1; // -1 means a load has not been triggered.
+    bool savechallange_new = false;
+    bool waiting_on_new = false; 
+    bool savechallange_quit = false;
+    bool waiting_on_quit = false;
     std::future<char*> load_file_future, save_file_future;
     // handle load/save child processes
     static const char *filter_extensions[1] = {"*.csa"};
@@ -294,7 +298,7 @@ int main(int, char**)
         
         // This bool tracks the "You told me to load, but you have unsaved changes" modal.
         // deferred modal popup bool.  see https://github.com/ocornut/imgui/issues/331
-        static bool savechallange = false; // initialize with false. this does not do an assignment every frame.
+        static bool savechallange_load = false; // initialize with false. this does not do an assignment every frame.
         
         // Save dialog handling.  This spawns a new window, so it does some parallel processing stuff
         // Save / load behavior is complex to handle the case where you choose "load", but you have unsaved changes.
@@ -313,16 +317,27 @@ int main(int, char**)
                     save_project_file(save_file);
                     plano::api::ClearProjectDirtyFlag();
                 } else {
-                    ; // Save was cancelled in the save dialog
+                    // Save was cancelled in the save dialog
+
+                    // Safety - do not quit immediately after cancelling a save dialog during a savechallange_quit
+                    if (waiting_on_quit)
+                        waiting_on_quit = false;
                 }
                 // Book keeping
                 waiting_on_save_dialog = false;
-                if(savechallange){
+                if(savechallange_load){
                     ImGui::CloseCurrentPopup();
-                    savechallange = false;
+                    savechallange_load = false;
                 }
+
+                if (savechallange_new) {
+                    ImGui::CloseCurrentPopup();
+                    savechallange_new = false;
+                }
+
             }
         }
+
         // Load dialog handling.  This spawns a new window, so it does some parallel processing stuff
         if (waiting_on_load_dialog && !waiting_on_save_dialog)
         {
@@ -351,6 +366,26 @@ int main(int, char**)
                 waiting_on_load_dialog = false;
             }
         }
+
+        // New handling.  This creates a new project.
+        if (waiting_on_new && !waiting_on_save_dialog)
+        {
+            context_a = plano::api::CreateContext(cbk, "../plano/data/");
+            plano::api::SetContext(context_a);
+            RegiserNodesToActiveContext();
+            
+            // Book keeping
+            waiting_on_new = false;
+        }
+
+        // Quit handling.  This quits.
+        if (waiting_on_quit && !waiting_on_save_dialog)
+        {
+            done = true;
+            // Book keeping
+            waiting_on_quit = false;
+        }
+
         
         // Render Triangle ~~~~
         
@@ -379,7 +414,13 @@ int main(int, char**)
         {
             if (ImGui::BeginMenu("File"))
             {
-                if (ImGui::MenuItem("New"), "Ctrl + N") {}
+                if (ImGui::MenuItem("New")) {
+                    if (plano::api::IsProjectDirty()) {
+                        savechallange_new = true;
+                    } else {
+                        waiting_on_new = true;
+                    }
+                }
                 if (ImGui::MenuItem("Load"))
                 {
                     if (plano::api::GetContext() == nullptr) {
@@ -391,7 +432,7 @@ int main(int, char**)
                         {
                             // defer popup to resolve popup stack issues
                             // see https://github.com/ocornut/imgui/issues/331
-                            savechallange = true;
+                            savechallange_load = true;
                         } else {
                             waiting_on_load_dialog = true;
                         }
@@ -406,7 +447,14 @@ int main(int, char**)
                 }
                 if (ImGui::MenuItem("Save As")) {}
                 ImGui::Separator();
-                if (ImGui::MenuItem("Quit", "Alt+F4")) {}
+                if (ImGui::MenuItem("Quit")) {
+                    if (plano::api::IsProjectDirty())
+                    {                        
+                        savechallange_quit = true;                        
+                    } else {
+                        done = true;
+                    }
+                }
                 ImGui::EndMenu();
             }
             ImGui::EndMainMenuBar();
@@ -415,15 +463,15 @@ int main(int, char**)
         // Draw modal window when the user chooses "load", but has unsaved changes.
         // handle menu popups after menus are closed.
         // see https://github.com/ocornut/imgui/issues/331
-        if(savechallange)
+        if(savechallange_load)
         {
-            savechallange = false;
-            ImGui::OpenPopup("SaveChallange");
+            savechallange_load = false;
+            ImGui::OpenPopup("SaveChallange_load");
             // Always center this window when appearing
             ImVec2 center = ImGui::GetMainViewport()->GetCenter();
             ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
         }
-        if (ImGui::BeginPopupModal("SaveChallange", NULL, ImGuiWindowFlags_None))
+        if (ImGui::BeginPopupModal("SaveChallange_load", NULL, ImGuiWindowFlags_None))
         {
             ImGui::Text("Before you load a new project, would you like to save the current changes?");
             if (ImGui::Button("Save First"))
@@ -439,6 +487,70 @@ int main(int, char**)
             if (ImGui::Button("Ditch Project"))
             {
                 waiting_on_load_dialog = true; // strictly not needed.
+                waiting_on_save_dialog = false;
+                ImGui::CloseCurrentPopup(); // close challange
+            }
+            ImGui::EndPopup();
+        }
+
+        // Draw modal window when the user chooses "new", but has unsaved changes.
+        // handle menu popups after menus are closed.
+        // see https://github.com/ocornut/imgui/issues/331
+        if (savechallange_new)
+        {
+            savechallange_new = false;
+            ImGui::OpenPopup("SaveChallange_new");
+            // Always center this window when appearing
+            ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+            ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+        }
+        if (ImGui::BeginPopupModal("SaveChallange_new", NULL, ImGuiWindowFlags_None))
+        {
+            ImGui::Text("Before you create a new project, would you like to save the current changes?");
+            if (ImGui::Button("Save First"))
+            {
+                // The logic for this is kind of spaghetti.  This will draw this frame, but will hit the save
+                // before the next frame.  The save always happens before loads, so it will chain the load
+                // after completing the save.
+                waiting_on_save_dialog = true;
+                waiting_on_new = true;
+                ImGui::CloseCurrentPopup(); // close challange
+            }
+            if (ImGui::Button("Ditch Project"))
+            {
+                waiting_on_new = true; // strictly not needed.
+                waiting_on_save_dialog = false;
+                ImGui::CloseCurrentPopup(); // close challange
+            }
+            ImGui::EndPopup();
+        }
+
+        // Draw modal window when the user chooses "quit", but has unsaved changes.
+        // handle menu popups after menus are closed.
+        // see https://github.com/ocornut/imgui/issues/331
+        if (savechallange_quit)
+        {
+            savechallange_quit = false;
+            ImGui::OpenPopup("SaveChallange_quit");
+            // Always center this window when appearing
+            ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+            ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+        }
+        if (ImGui::BeginPopupModal("SaveChallange_quit", NULL, ImGuiWindowFlags_None))
+        {
+            ImGui::Text("Before you quit, would you like to save the current changes?");
+            if (ImGui::Button("Save First"))
+            {
+                // The logic for this is kind of spaghetti.  This will draw this frame, but will hit the save
+                // before the next frame.  The save always happens before loads, so it will chain the load
+                // after completing the save.
+                waiting_on_save_dialog = true;
+                waiting_on_quit = true;
+                ImGui::CloseCurrentPopup(); // close challange
+            }
+            if (ImGui::Button("Ditch Project"))
+            {
+                waiting_on_quit = true; // strictly not needed.
                 waiting_on_save_dialog = false;
                 ImGui::CloseCurrentPopup(); // close challange
             }
