@@ -225,7 +225,7 @@ int main(int, char**)
     cbk.GetTextureWidth = NodosGetTextureWidth;
     
     // We have to track our own contexts.  context_a will be the "loaded context", and can be null.
-    plano::types::ContextData* context_a;
+    plano::types::ContextData* context_a = nullptr;
     
     // Variables to track sample window behaviors
     bool show_demo_window = true;
