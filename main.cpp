@@ -41,7 +41,7 @@
 std::unordered_map<GLuint, nodos_texture> texture_owner;
 
 // Node definitions
-#include "node_defs/plano_nodes.h"
+#include "node_defs/casa_nodes.h"
 
 // Implement Callbacks
 ImTextureID NodosLoadTexture(const char* path)

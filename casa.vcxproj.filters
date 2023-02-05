@@ -96,7 +96,7 @@
     <ClCompile Include="save_load_file.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="plano_nodes.cpp">
+    <ClCompile Include="casa_nodes.cpp">
       <Filter>Header Files</Filter>
     </ClCompile>
   </ItemGroup>

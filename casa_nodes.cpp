@@ -1,7 +1,7 @@
 #include "node_defs/blueprint_demo.h"
 #include "node_defs/import_animal.h"
 #include "node_defs/widget_demo.h"
-#include "node_defs/plano_nodes.h"
+#include "node_defs/casa_nodes.h"
 
 
 void RegiserNodesToActiveContext(void) {
