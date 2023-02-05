@@ -9,7 +9,7 @@
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
 #include "imgui_impl_opengl3.h"
-#include "tinyfiledialogs.h"
+
 #include <stdio.h>
 #include <SDL.h>
 #include <iostream>
@@ -41,19 +41,7 @@
 std::unordered_map<GLuint, nodos_texture> texture_owner;
 
 // Node definitions
-#include "node_defs/import_animal.h"
-#include "node_defs/blueprint_demo.h"
-#include "node_defs/widget_demo.h"
-
-// Thread stuff
-#include <thread>
-#include <future>
-// Deals with the situation where a "OS dialog (save file, load file)" blocks
-// the draw thread.
-template<typename R>
-  bool is_ready(std::future<R> const& f)
-  { return f.wait_for(std::chrono::seconds(0)) == std::future_status::ready; }
-
+#include "node_defs/plano_nodes.h"
 
 // Implement Callbacks
 ImTextureID NodosLoadTexture(const char* path)
@@ -121,21 +109,7 @@ unsigned int NodosGetTextureHeight(ImTextureID texture)
     return texture_owner[gid].dim_y;
 }
 
-void RegiserNodesToActiveContext()
-{
-    // Register node types to the context that is "active"
-    plano::api::RegisterNewNode(node_defs::blueprint_demo::InputActionFire::ConstructDefinition());
-    plano::api::RegisterNewNode(node_defs::blueprint_demo::OutputAction::ConstructDefinition());
-    plano::api::RegisterNewNode(node_defs::blueprint_demo::Branch::ConstructDefinition());
-    plano::api::RegisterNewNode(node_defs::blueprint_demo::DoN::ConstructDefinition());
-    plano::api::RegisterNewNode(node_defs::blueprint_demo::SetTimer::ConstructDefinition());
-    plano::api::RegisterNewNode(node_defs::blueprint_demo::SingleLineTraceByChannel::ConstructDefinition());
-    plano::api::RegisterNewNode(node_defs::blueprint_demo::PrintString::ConstructDefinition());
-    plano::api::RegisterNewNode(node_defs::import_animal::ConstructDefinition());
-    plano::api::RegisterNewNode(node_defs::widget_demo::BasicWidgets::ConstructDefinition());
-    plano::api::RegisterNewNode(node_defs::widget_demo::TreeDemo::ConstructDefinition());
-    plano::api::RegisterNewNode(node_defs::widget_demo::PlotDemo::ConstructDefinition());
-}
+
 
 // Main 
 int main(int, char**)
@@ -224,9 +198,6 @@ int main(int, char**)
     cbk.GetTextureHeight = NodosGetTextureHeight; // ...
     cbk.GetTextureWidth = NodosGetTextureWidth;
     
-    // We have to track our own contexts.  context_a will be the "loaded context", and can be null.
-    plano::types::ContextData* context_a = nullptr;
-    
     // Variables to track sample window behaviors
     bool show_demo_window = true;
     bool show_another_window = false;
@@ -264,26 +235,8 @@ int main(int, char**)
         printf("something went wrong with framebuffer setup");
         return -1;
     }
-
-    
-    // Load & Save States
-    struct plano_state_flags {
-        bool waiting_on_os_save_dialog = false;   // true when an asyncronous, native file browser is visible to the user. Dialog is geared towards saving a project file.
-        bool modal_save_challange_load = false;   // true when the "do you want to save before you load" modal is visible. Triggered when "load" is requested with a dirty project.
-        bool waiting_on_os_load_dialog = false;   // true when an asyncronous, native file browser is visible to the user. Dialog is geared towards loading a project file.
-        bool modal_save_challange_new = false;    // true when the "do you want to save before you create a new project" modal is visible. Triggered when "new" is requested with a dirty project.
-        bool waiting_on_new = false;              // true when a new project needs to be created.  This is a little silly but it re-uses the pattern for the other project handlers.
-        bool modal_save_challange_quit = false;   // true when the "do you want to save before you quit" modal is visible. Triggered when "quit" is requested with a dirty project.
-        bool waiting_on_quit = false;             // true when a quit is requested by the menu.  Tracking it this way allows us to handle edge cases like when a user goes to quit then indecisively cancels a save challange.
-        bool done = false;
-    };
     
     plano_state_flags pstate;
-
-    // handle load/save child processes
-    std::future<char*> load_file_future, save_file_future;
-    static const char *filter_extensions[1] = {"*.csa"};
-    std::string last_save_file_address = "";
 
     // Main draw loop
     while (!pstate.done)
@@ -304,92 +257,7 @@ int main(int, char**)
             
         }
         
-        
-        // Save dialog handling.  This spawns a new window, so it does some parallel processing stuff
-        // Save / load behavior is complex to handle the case where you choose "load", but you have unsaved changes.
-        if (pstate.waiting_on_os_save_dialog)
-        {            
-            // Spawn the dialog if this is the first frame where (waiting_on_os_save_dialog == true)
-            if (!save_file_future.valid())
-            {
-                save_file_future = std::async(tinyfd_saveFileDialog, "Save the Casa Project", nullptr, 1, filter_extensions, "Casa Project");
-            }
-            // Wait until the save dialog interactions are done.
-            if(is_ready(save_file_future))
-            {
-                const char* save_file = save_file_future.get();
-                if (save_file) {
-                    save_project_file(save_file);
-                    plano::api::ClearProjectDirtyFlag();
-                    last_save_file_address = std::string(save_file);
-                } else {
-                    // Save was cancelled in the save dialog
-
-                    // Safety - do not quit immediately after cancelling a save dialog during a modal_save_challange_quit
-                    if (pstate.waiting_on_quit)
-                        pstate.waiting_on_quit = false;
-                }
-                // Book keeping
-                    ImGui::CloseCurrentPopup();
-                    pstate.waiting_on_os_save_dialog = false;
-                if(pstate.modal_save_challange_load){
-                    pstate.modal_save_challange_load = false;  // No longer  
-                }
-
-                if (pstate.modal_save_challange_new) {
-                    ImGui::CloseCurrentPopup();
-                    pstate.modal_save_challange_new = false;
-                }
-
-            }
-        }
-
-        // Load dialog handling.  This spawns a new window, so it does some parallel processing stuff
-        if (pstate.waiting_on_os_load_dialog && !pstate.waiting_on_os_save_dialog)
-        {
-            if(!load_file_future.valid())
-            {
-                load_file_future = std::async(tinyfd_openFileDialog,"Load the Casa Project",nullptr, 1, filter_extensions, "Casa Project", 0);
-            }
-            if(is_ready(load_file_future))
-            {
-                const char* load_file = load_file_future.get();
-                if (load_file) {
-                    if(context_a != nullptr)
-                    {
-                        plano::api::DestroyContext(context_a);
-                    }
-                    context_a = plano::api::CreateContext(cbk, "../plano/data/");
-                    plano::api::SetContext(context_a);
-                    RegiserNodesToActiveContext();
-                    load_project_file(load_file);
-                } else {
-                    ; // load cancelled in UI
-                }
-                // Book keeping
-                pstate.waiting_on_os_load_dialog = false;
-            }
-        }
-
-        // New handling.  This creates a new project.
-        if (pstate.waiting_on_new && !pstate.waiting_on_os_save_dialog)
-        {
-            context_a = plano::api::CreateContext(cbk, "../plano/data/");
-            plano::api::SetContext(context_a);
-            RegiserNodesToActiveContext();
-            
-            // Book keeping
-            pstate.waiting_on_new = false;
-        }
-
-        // Quit handling.  This quits.
-        if (pstate.waiting_on_quit && !pstate.waiting_on_os_save_dialog)
-        {
-            pstate.done = true;
-            // Book keeping
-            pstate.waiting_on_quit = false;
-        }
-
+        handle_load_save_dialogs(pstate, cbk);
         
         // Render Triangle ~~~~
         
@@ -444,17 +312,17 @@ int main(int, char**)
                 }
                 if (ImGui::MenuItem("Save", "", false, plano::api::IsProjectDirty()))
                 {
-                    if (context_a != nullptr) {
-                        if (last_save_file_address != "") {
-                            save_project_file(last_save_file_address.c_str());
+                    if (pstate.context_a != nullptr) {
+                        if (pstate.last_save_file_address != "") {
+                            save_project_file(pstate.last_save_file_address.c_str());
                             plano::api::ClearProjectDirtyFlag();
                         } else {
                             pstate.waiting_on_os_save_dialog = true;
                         }
                     }
                 }
-                if (ImGui::MenuItem("Save As", "", false, context_a != nullptr)) {
-                    if (context_a != nullptr)
+                if (ImGui::MenuItem("Save As", "", false, pstate.context_a != nullptr)) {
+                    if (pstate.context_a != nullptr)
                         pstate.waiting_on_os_save_dialog = true;
                 }
                 ImGui::Separator();
