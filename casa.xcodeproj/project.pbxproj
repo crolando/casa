@@ -32,6 +32,8 @@
 		37188CEF296E22BD00D75781 /* imgui_tables.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3779BAA82936B87600AD8A46 /* imgui_tables.cpp */; };
 		37188CF0296E22BD00D75781 /* backend_io.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3779BA862936B54F00AD8A46 /* backend_io.cpp */; };
 		37188CF1296E22BD00D75781 /* imgui_canvas.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3779BA9D2936B56D00AD8A46 /* imgui_canvas.cpp */; };
+		373E9C4B298F5C3C007AB265 /* save_load_file.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 373E9C48298F5C3B007AB265 /* save_load_file.cpp */; };
+		373E9C4C298F5C3C007AB265 /* casa_nodes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 373E9C49298F5C3B007AB265 /* casa_nodes.cpp */; };
 		37D3D6722973043B007D195D /* tinyfiledialogs.c in Sources */ = {isa = PBXBuildFile; fileRef = 37D3D6702973043A007D195D /* tinyfiledialogs.c */; };
 /* End PBXBuildFile section */
 
@@ -49,6 +51,9 @@
 
 /* Begin PBXFileReference section */
 		37188CF7296E22BD00D75781 /* casa */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = casa; sourceTree = BUILT_PRODUCTS_DIR; };
+		373E9C48298F5C3B007AB265 /* save_load_file.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = save_load_file.cpp; sourceTree = "<group>"; };
+		373E9C49298F5C3B007AB265 /* casa_nodes.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = casa_nodes.cpp; sourceTree = "<group>"; };
+		373E9C4A298F5C3C007AB265 /* node_defs */ = {isa = PBXFileReference; lastKnownFileType = folder; path = node_defs; sourceTree = "<group>"; };
 		3763B35B2965B24000EBF9BB /* save_load_file.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = save_load_file.h; sourceTree = "<group>"; };
 		3779BA74292E7DDC00AD8A46 /* Library */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Library; path = ../../../../Library; sourceTree = "<group>"; };
 		3779BA752933A57600AD8A46 /* imgui_impl_opengl3_loader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imgui_impl_opengl3_loader.h; sourceTree = "<group>"; };
@@ -104,6 +109,9 @@
 		3779BA60292E7D1500AD8A46 = {
 			isa = PBXGroup;
 			children = (
+				373E9C49298F5C3B007AB265 /* casa_nodes.cpp */,
+				373E9C4A298F5C3C007AB265 /* node_defs */,
+				373E9C48298F5C3B007AB265 /* save_load_file.cpp */,
 				37D3D6702973043A007D195D /* tinyfiledialogs.c */,
 				37D3D6712973043B007D195D /* tinyfiledialogs.h */,
 				3763B35B2965B24000EBF9BB /* save_load_file.h */,
@@ -218,9 +226,11 @@
 				37188CD9296E22BD00D75781 /* main.cpp in Sources */,
 				37188CDA296E22BD00D75781 /* imgui_node_editor_api.cpp in Sources */,
 				37188CDB296E22BD00D75781 /* plano_api.cpp in Sources */,
+				373E9C4C298F5C3C007AB265 /* casa_nodes.cpp in Sources */,
 				37188CDC296E22BD00D75781 /* draw_nodes.cpp in Sources */,
 				37188CDD296E22BD00D75781 /* handle_interactions.cpp in Sources */,
 				37188CDE296E22BD00D75781 /* imgui.cpp in Sources */,
+				373E9C4B298F5C3C007AB265 /* save_load_file.cpp in Sources */,
 				37188CDF296E22BD00D75781 /* crude_json.cpp in Sources */,
 				37188CE0296E22BD00D75781 /* example_property_im_draw.cpp in Sources */,
 				37188CE1296E22BD00D75781 /* imgui_draw.cpp in Sources */,
