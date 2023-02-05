@@ -280,6 +280,7 @@ int main(int, char**)
     // handle load/save child processes
     std::future<char*> load_file_future, save_file_future;
     static const char *filter_extensions[1] = {"*.csa"};
+    std::string last_save_file_address = "";
 
     // Main draw loop
     bool done = false;
@@ -304,11 +305,12 @@ int main(int, char**)
         
         // Save dialog handling.  This spawns a new window, so it does some parallel processing stuff
         // Save / load behavior is complex to handle the case where you choose "load", but you have unsaved changes.
-        {
-            // Launch the save dialog
-            if(!save_file_future.valid())
         if (waiting_on_os_save_dialog)
+        {            
+            // Spawn the dialog if this is the first frame where (waiting_on_os_save_dialog == true)
+            if (!save_file_future.valid())
             {
+                save_file_future = std::async(tinyfd_saveFileDialog, "Save the Casa Project", nullptr, 1, filter_extensions, "Casa Project");
             }
             // Wait until the save dialog interactions are done.
             if(is_ready(save_file_future))
@@ -317,6 +319,7 @@ int main(int, char**)
                 if (save_file) {
                     save_project_file(save_file);
                     plano::api::ClearProjectDirtyFlag();
+                    last_save_file_address = std::string(save_file);
                 } else {
                     // Save was cancelled in the save dialog
 
@@ -441,12 +444,19 @@ int main(int, char**)
                 }
                 if (ImGui::MenuItem("Save"))
                 {
-                    
-                    auto save_file_address = tinyfd_saveFileDialog("Save the Casa Project","my_project.csa", 1, filter_extensions,"Casa Project");
-                    if (save_file_address)
-                        save_project_file(save_file_address);
+                    if (context_a != nullptr) {
+                        if (last_save_file_address != "") {
+                            save_project_file(last_save_file_address.c_str());
+                            plano::api::ClearProjectDirtyFlag();
+                        } else {
+                            waiting_on_os_save_dialog = true;
+                        }
+                    }
                 }
-                if (ImGui::MenuItem("Save As")) {}
+                if (ImGui::MenuItem("Save As")) {
+                    if (context_a != nullptr)
+                        waiting_on_os_save_dialog = true;
+                }
                 ImGui::Separator();
                 if (ImGui::MenuItem("Quit")) {
                     if (plano::api::IsProjectDirty())
