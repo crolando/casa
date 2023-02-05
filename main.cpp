@@ -9,8 +9,10 @@
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
 #include "imgui_impl_opengl3.h"
+
 #include <stdio.h>
 #include <SDL.h>
+#include <iostream>
 
 // Glew is not used during ES use
 #ifdef IMGUI_IMPL_OPENGL_ES2
@@ -19,6 +21,8 @@
     #include "GL/glew.h" // must be included before opengl
     #include <SDL_opengl.h>
 #endif
+
+
 
 #include "draw_triangle.h"
 
@@ -37,10 +41,7 @@
 std::unordered_map<GLuint, nodos_texture> texture_owner;
 
 // Node definitions
-#include "node_defs/import_animal.h"
-#include "node_defs/blueprint_demo.h"
-#include "node_defs/widget_demo.h"
-
+#include "node_defs/casa_nodes.h"
 
 // Implement Callbacks
 ImTextureID NodosLoadTexture(const char* path)
@@ -107,6 +108,8 @@ unsigned int NodosGetTextureHeight(ImTextureID texture)
     // use hash table to lookup the metadata
     return texture_owner[gid].dim_y;
 }
+
+
 
 // Main 
 int main(int, char**)
@@ -195,28 +198,6 @@ int main(int, char**)
     cbk.GetTextureHeight = NodosGetTextureHeight; // ...
     cbk.GetTextureWidth = NodosGetTextureWidth;
     
-    // Create a plano context
-    plano::types::ContextData* context_a;
-    context_a = plano::api::CreateContext(cbk, "../plano/data/");
-    
-    // Make context_a the "active context"
-    // Note: you can have multple contexts. All plano::api calls after a "SetContext" affect that "active" context.
-    plano::api::SetContext(context_a);
-    
-    // Register node types to the context that is "active"
-    plano::api::RegisterNewNode(node_defs::blueprint_demo::InputActionFire::ConstructDefinition());
-    plano::api::RegisterNewNode(node_defs::blueprint_demo::OutputAction::ConstructDefinition());
-    plano::api::RegisterNewNode(node_defs::blueprint_demo::Branch::ConstructDefinition());
-    plano::api::RegisterNewNode(node_defs::blueprint_demo::DoN::ConstructDefinition());
-    plano::api::RegisterNewNode(node_defs::blueprint_demo::SetTimer::ConstructDefinition());
-    plano::api::RegisterNewNode(node_defs::blueprint_demo::SingleLineTraceByChannel::ConstructDefinition());
-    plano::api::RegisterNewNode(node_defs::blueprint_demo::PrintString::ConstructDefinition());
-    plano::api::RegisterNewNode(node_defs::import_animal::ConstructDefinition());
-    plano::api::RegisterNewNode(node_defs::widget_demo::BasicWidgets::ConstructDefinition());
-    plano::api::RegisterNewNode(node_defs::widget_demo::TreeDemo::ConstructDefinition());
-    plano::api::RegisterNewNode(node_defs::widget_demo::PlotDemo::ConstructDefinition());
-    load_project_file("nodos_project_a.txt"); // deserialize a project into this context (uses the nodes that were registered)
-    
     // Variables to track sample window behaviors
     bool show_demo_window = true;
     bool show_another_window = false;
@@ -254,10 +235,11 @@ int main(int, char**)
         printf("something went wrong with framebuffer setup");
         return -1;
     }
+    
+    plano_state_flags pstate;
 
     // Main draw loop
-    bool done = false;
-    while (!done)
+    while (!pstate.done)
     {
         // Poll and handle events (inputs, window resize, etc.)
         // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
@@ -269,11 +251,14 @@ int main(int, char**)
         {
             ImGui_ImplSDL2_ProcessEvent(&event);
             if (event.type == SDL_QUIT)
-                done = true;
+                pstate.done = true;
             if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(window))
-                done = true;
+                pstate.done = true;
+            
         }
-
+        
+        handle_load_save_dialogs(pstate, cbk);
+        
         // Render Triangle ~~~~
         
         glUseProgram(program); // Use our shader.
@@ -289,15 +274,84 @@ int main(int, char**)
         
         // render to screen from here on...
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
+        
         // Start the Dear ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplSDL2_NewFrame(window);
         ImGui::NewFrame();
+        
+        // Menu bar
+        if (ImGui::BeginMainMenuBar())
+        {
+            if (ImGui::BeginMenu("File"))
+            {
+                if (ImGui::MenuItem("New")) {
+                    if (plano::api::IsProjectDirty()) {
+                        pstate.modal_save_challange_new = true;
+                    } else {
+                        pstate.waiting_on_new = true;
+                    }
+                }
+                if (ImGui::MenuItem("Load"))
+                {
+                    if (plano::api::GetContext() == nullptr) {
+                        pstate.waiting_on_os_load_dialog = true; // When you load with a blank context, just load.
+                    } else {
+                        // if a load was requested, but the current session is not saved... it must trigger a save challange.
+                        // but because loading a file causes a dirty flag change, ignore it.
+                        if(plano::api::IsProjectDirty())
+                        {
+                            // defer popup to resolve popup stack issues
+                            // see https://github.com/ocornut/imgui/issues/331
+                            pstate.modal_save_challange_load = true; // If the project is dirty, do a save challange.
+                        } else {
+                            pstate.waiting_on_os_load_dialog = true; // if the project isn't dirty, just spawn the load dialog. 
+                        }
+                    }
+                }
+                if (ImGui::MenuItem("Save", "", false, plano::api::IsProjectDirty()))
+                {
+                    if (pstate.context_a != nullptr) {
+                        if (pstate.last_save_file_address != "") {
+                            save_project_file(pstate.last_save_file_address.c_str());
+                            plano::api::ClearProjectDirtyFlag();
+                        } else {
+                            pstate.waiting_on_os_save_dialog = true;
+                        }
+                    }
+                }
+                if (ImGui::MenuItem("Save As", "", false, pstate.context_a != nullptr)) {
+                    if (pstate.context_a != nullptr)
+                        pstate.waiting_on_os_save_dialog = true;
+                }
+                ImGui::Separator();
+                if (ImGui::MenuItem("Quit")) {
+                    if (plano::api::IsProjectDirty())
+                    {                        
+                        pstate.modal_save_challange_quit = true;
+                    } else {
+                        pstate.done = true;
+                    }
+                }
+                ImGui::EndMenu();
+            }
+            ImGui::EndMainMenuBar();
+        }
+        
+        handle_menu_state(pstate);
 
-
-        // 1. Show the active plano node graph window context
-        plano::api::Frame();
+        // if we're in a dialog, don't let the user mess with stuff
+        /*if(waiting_on_os_load_dialog || waiting_on_os_save_dialog) {
+            SDL_SetWindowAlwaysOnTop(window, SDL_FALSE);
+            SDL_SetWindowKeyboardGrab(window, SDL_FALSE);
+        } else {
+            SDL_SetWindowAlwaysOnTop(window, SDL_TRUE);
+            SDL_SetWindowKeyboardGrab(window, SDL_TRUE);
+        }*/
+        
+        // 1. Show the active plano node graph window context, if it exists
+        if (plano::api::GetContext() != nullptr)
+            plano::api::Frame();
         
         // 2. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
         if (show_demo_window)
@@ -336,7 +390,7 @@ int main(int, char**)
                 show_another_window = false;
             ImGui::End();
         }
-
+        
         // Rendering 
         ImGui::Render();
         glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
@@ -344,14 +398,9 @@ int main(int, char**)
         glClear(GL_COLOR_BUFFER_BIT);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         SDL_GL_SwapWindow(window);
+        
     } // End of draw loop.  Shutdown requested beyond here...
-
-    // Write save file from active context
-    save_project_file("nodos_project_a.txt");
-    
-
     // Cleanup
-    plano::api::DestroyContext(context_a);
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
