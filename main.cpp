@@ -274,7 +274,8 @@ int main(int, char**)
         bool modal_save_challange_new = false;    // true when the "do you want to save before you create a new project" modal is visible. Triggered when "new" is requested with a dirty project.
         bool waiting_on_new = false;              // true when a new project needs to be created.  This is a little silly but it re-uses the pattern for the other project handlers.
         bool modal_save_challange_quit = false;   // true when the "do you want to save before you quit" modal is visible. Triggered when "quit" is requested with a dirty project.
-        bool waiting_on_quit = false;             // true when a quit is requested by the menu.  Tracking it this way allows us to handle edge cases like when a user goes to quit then indecisively cancels a save challange. 
+        bool waiting_on_quit = false;             // true when a quit is requested by the menu.  Tracking it this way allows us to handle edge cases like when a user goes to quit then indecisively cancels a save challange.
+        bool done = false;
     };
     
     plano_state_flags pstate;
@@ -285,8 +286,7 @@ int main(int, char**)
     std::string last_save_file_address = "";
 
     // Main draw loop
-    bool done = false;
-    while (!done)
+    while (!pstate.done)
     {
         // Poll and handle events (inputs, window resize, etc.)
         // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
@@ -298,9 +298,9 @@ int main(int, char**)
         {
             ImGui_ImplSDL2_ProcessEvent(&event);
             if (event.type == SDL_QUIT)
-                done = true;
+                pstate.done = true;
             if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(window))
-                done = true;
+                pstate.done = true;
             
         }
         
@@ -385,7 +385,7 @@ int main(int, char**)
         // Quit handling.  This quits.
         if (pstate.waiting_on_quit && !pstate.waiting_on_os_save_dialog)
         {
-            done = true;
+            pstate.done = true;
             // Book keeping
             pstate.waiting_on_quit = false;
         }
@@ -463,7 +463,7 @@ int main(int, char**)
                     {                        
                         pstate.modal_save_challange_quit = true;
                     } else {
-                        done = true;
+                        pstate.done = true;
                     }
                 }
                 ImGui::EndMenu();
