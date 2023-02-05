@@ -442,7 +442,7 @@ int main(int, char**)
                         }
                     }
                 }
-                if (ImGui::MenuItem("Save"))
+                if (ImGui::MenuItem("Save", "", false, plano::api::IsProjectDirty()))
                 {
                     if (context_a != nullptr) {
                         if (last_save_file_address != "") {
@@ -453,7 +453,7 @@ int main(int, char**)
                         }
                     }
                 }
-                if (ImGui::MenuItem("Save As")) {
+                if (ImGui::MenuItem("Save As", "", false, context_a != nullptr)) {
                     if (context_a != nullptr)
                         waiting_on_os_save_dialog = true;
                 }
