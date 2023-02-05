@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		37188CD9296E22BD00D75781 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3779BA792933A57700AD8A46 /* main.cpp */; };
 		37188CDA296E22BD00D75781 /* imgui_node_editor_api.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3779BA9E2936B56D00AD8A46 /* imgui_node_editor_api.cpp */; };
 		37188CDB296E22BD00D75781 /* plano_api.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3779BA8F2936B54F00AD8A46 /* plano_api.cpp */; };
 		37188CDC296E22BD00D75781 /* draw_nodes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3779BA852936B54E00AD8A46 /* draw_nodes.cpp */; };
@@ -21,9 +20,7 @@
 		37188CE4296E22BD00D75781 /* widgets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3779BA892936B54F00AD8A46 /* widgets.cpp */; };
 		37188CE5296E22BD00D75781 /* drawing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3779BA8D2936B54F00AD8A46 /* drawing.cpp */; };
 		37188CE6296E22BD00D75781 /* internal.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3779BA872936B54F00AD8A46 /* internal.cpp */; };
-		37188CE7296E22BD00D75781 /* imgui_impl_opengl3.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3779BA772933A57600AD8A46 /* imgui_impl_opengl3.cpp */; };
 		37188CE8296E22BD00D75781 /* attribute.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3779BA832936B54E00AD8A46 /* attribute.cpp */; };
-		37188CE9296E22BD00D75781 /* imgui_impl_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3779BA7B2933A57700AD8A46 /* imgui_impl_sdl.cpp */; };
 		37188CEA296E22BD00D75781 /* imgui_demo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3779BAA72936B87600AD8A46 /* imgui_demo.cpp */; };
 		37188CEB296E22BD00D75781 /* frame.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3779BA8E2936B54F00AD8A46 /* frame.cpp */; };
 		37188CEC296E22BD00D75781 /* node_registry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3779BA8A2936B54F00AD8A46 /* node_registry.cpp */; };
@@ -32,9 +29,12 @@
 		37188CEF296E22BD00D75781 /* imgui_tables.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3779BAA82936B87600AD8A46 /* imgui_tables.cpp */; };
 		37188CF0296E22BD00D75781 /* backend_io.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3779BA862936B54F00AD8A46 /* backend_io.cpp */; };
 		37188CF1296E22BD00D75781 /* imgui_canvas.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3779BA9D2936B56D00AD8A46 /* imgui_canvas.cpp */; };
-		373E9C4B298F5C3C007AB265 /* save_load_file.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 373E9C48298F5C3B007AB265 /* save_load_file.cpp */; };
-		373E9C4C298F5C3C007AB265 /* casa_nodes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 373E9C49298F5C3B007AB265 /* casa_nodes.cpp */; };
-		37D3D6722973043B007D195D /* tinyfiledialogs.c in Sources */ = {isa = PBXBuildFile; fileRef = 37D3D6702973043A007D195D /* tinyfiledialogs.c */; };
+		373E9C61298F6511007AB265 /* casa_nodes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 373E9C5B298F6511007AB265 /* casa_nodes.cpp */; };
+		373E9C62298F6511007AB265 /* imgui_impl_opengl3.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 373E9C5C298F6511007AB265 /* imgui_impl_opengl3.cpp */; };
+		373E9C63298F6511007AB265 /* save_load_file.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 373E9C5D298F6511007AB265 /* save_load_file.cpp */; };
+		373E9C64298F6511007AB265 /* tinyfiledialogs.c in Sources */ = {isa = PBXBuildFile; fileRef = 373E9C5E298F6511007AB265 /* tinyfiledialogs.c */; };
+		373E9C65298F6511007AB265 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 373E9C5F298F6511007AB265 /* main.cpp */; };
+		373E9C66298F6511007AB265 /* imgui_impl_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 373E9C60298F6511007AB265 /* imgui_impl_sdl.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -51,19 +51,24 @@
 
 /* Begin PBXFileReference section */
 		37188CF7296E22BD00D75781 /* casa */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = casa; sourceTree = BUILT_PRODUCTS_DIR; };
-		373E9C48298F5C3B007AB265 /* save_load_file.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = save_load_file.cpp; sourceTree = "<group>"; };
-		373E9C49298F5C3B007AB265 /* casa_nodes.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = casa_nodes.cpp; sourceTree = "<group>"; };
-		373E9C4A298F5C3C007AB265 /* node_defs */ = {isa = PBXFileReference; lastKnownFileType = folder; path = node_defs; sourceTree = "<group>"; };
-		3763B35B2965B24000EBF9BB /* save_load_file.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = save_load_file.h; sourceTree = "<group>"; };
+		373E9C4E298F6511007AB265 /* imgui_impl_sdl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imgui_impl_sdl.h; sourceTree = "<group>"; };
+		373E9C4F298F6511007AB265 /* tinyfiledialogs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tinyfiledialogs.h; sourceTree = "<group>"; };
+		373E9C50298F6511007AB265 /* imgui_impl_opengl3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imgui_impl_opengl3.h; sourceTree = "<group>"; };
+		373E9C51298F6511007AB265 /* imgui_impl_opengl3_loader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imgui_impl_opengl3_loader.h; sourceTree = "<group>"; };
+		373E9C52298F6511007AB265 /* save_load_file.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = save_load_file.h; sourceTree = "<group>"; };
+		373E9C53298F6511007AB265 /* draw_triangle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = draw_triangle.h; sourceTree = "<group>"; };
+		373E9C55298F6511007AB265 /* widget_demo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = widget_demo.h; sourceTree = "<group>"; };
+		373E9C56298F6511007AB265 /* blueprint_demo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = blueprint_demo.h; sourceTree = "<group>"; };
+		373E9C57298F6511007AB265 /* casa_nodes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = casa_nodes.h; sourceTree = "<group>"; };
+		373E9C58298F6511007AB265 /* import_animal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = import_animal.h; sourceTree = "<group>"; };
+		373E9C59298F6511007AB265 /* nodos_texture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = nodos_texture.h; sourceTree = "<group>"; };
+		373E9C5B298F6511007AB265 /* casa_nodes.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = casa_nodes.cpp; sourceTree = "<group>"; };
+		373E9C5C298F6511007AB265 /* imgui_impl_opengl3.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = imgui_impl_opengl3.cpp; sourceTree = "<group>"; };
+		373E9C5D298F6511007AB265 /* save_load_file.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = save_load_file.cpp; sourceTree = "<group>"; };
+		373E9C5E298F6511007AB265 /* tinyfiledialogs.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = tinyfiledialogs.c; sourceTree = "<group>"; };
+		373E9C5F298F6511007AB265 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		373E9C60298F6511007AB265 /* imgui_impl_sdl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = imgui_impl_sdl.cpp; sourceTree = "<group>"; };
 		3779BA74292E7DDC00AD8A46 /* Library */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Library; path = ../../../../Library; sourceTree = "<group>"; };
-		3779BA752933A57600AD8A46 /* imgui_impl_opengl3_loader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imgui_impl_opengl3_loader.h; sourceTree = "<group>"; };
-		3779BA762933A57600AD8A46 /* nodos_texture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = nodos_texture.h; sourceTree = "<group>"; };
-		3779BA772933A57600AD8A46 /* imgui_impl_opengl3.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = imgui_impl_opengl3.cpp; sourceTree = "<group>"; };
-		3779BA782933A57700AD8A46 /* imgui_impl_sdl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imgui_impl_sdl.h; sourceTree = "<group>"; };
-		3779BA792933A57700AD8A46 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
-		3779BA7A2933A57700AD8A46 /* node_defs */ = {isa = PBXFileReference; lastKnownFileType = folder; path = node_defs; sourceTree = "<group>"; };
-		3779BA7B2933A57700AD8A46 /* imgui_impl_sdl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = imgui_impl_sdl.cpp; sourceTree = "<group>"; };
-		3779BA7C2933A57700AD8A46 /* imgui_impl_opengl3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imgui_impl_opengl3.h; sourceTree = "<group>"; };
 		3779BA832936B54E00AD8A46 /* attribute.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = attribute.cpp; path = ../plano/src/attribute.cpp; sourceTree = "<group>"; };
 		3779BA842936B54E00AD8A46 /* builders.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = builders.cpp; path = ../plano/src/builders.cpp; sourceTree = "<group>"; };
 		3779BA852936B54E00AD8A46 /* draw_nodes.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = draw_nodes.cpp; path = ../plano/src/draw_nodes.cpp; sourceTree = "<group>"; };
@@ -87,9 +92,6 @@
 		3779BAA92936B87600AD8A46 /* imgui_widgets.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = imgui_widgets.cpp; path = "../imgui-node-editor/external/imgui/imgui_widgets.cpp"; sourceTree = "<group>"; };
 		3779BAAA2936B87600AD8A46 /* imgui_draw.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = imgui_draw.cpp; path = "../imgui-node-editor/external/imgui/imgui_draw.cpp"; sourceTree = "<group>"; };
 		377E7442294A0543005615E4 /* internal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = internal.h; path = ../plano/include/internal/internal.h; sourceTree = "<group>"; };
-		37AE488A296B11F9005C4AD8 /* draw_triangle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = draw_triangle.h; sourceTree = "<group>"; };
-		37D3D6702973043A007D195D /* tinyfiledialogs.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = tinyfiledialogs.c; sourceTree = "<group>"; };
-		37D3D6712973043B007D195D /* tinyfiledialogs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tinyfiledialogs.h; sourceTree = "<group>"; };
 		37E92CAF29466EB8000C77AB /* imgui_node_editor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = imgui_node_editor.h; path = "../imgui-node-editor/imgui_node_editor.h"; sourceTree = "<group>"; };
 		37F0DB0F2941655800DC7360 /* include */ = {isa = PBXFileReference; lastKnownFileType = folder; name = include; path = ../plano/include; sourceTree = "<group>"; };
 		37F0DB1029417F3900DC7360 /* imgui.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = imgui.h; path = "../imgui-node-editor/external/imgui/imgui.h"; sourceTree = "<group>"; };
@@ -106,18 +108,52 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		373E9C4D298F6511007AB265 /* include */ = {
+			isa = PBXGroup;
+			children = (
+				373E9C4E298F6511007AB265 /* imgui_impl_sdl.h */,
+				373E9C4F298F6511007AB265 /* tinyfiledialogs.h */,
+				373E9C50298F6511007AB265 /* imgui_impl_opengl3.h */,
+				373E9C51298F6511007AB265 /* imgui_impl_opengl3_loader.h */,
+				373E9C52298F6511007AB265 /* save_load_file.h */,
+				373E9C53298F6511007AB265 /* draw_triangle.h */,
+				373E9C54298F6511007AB265 /* node_defs */,
+				373E9C59298F6511007AB265 /* nodos_texture.h */,
+			);
+			path = include;
+			sourceTree = "<group>";
+		};
+		373E9C54298F6511007AB265 /* node_defs */ = {
+			isa = PBXGroup;
+			children = (
+				373E9C55298F6511007AB265 /* widget_demo.h */,
+				373E9C56298F6511007AB265 /* blueprint_demo.h */,
+				373E9C57298F6511007AB265 /* casa_nodes.h */,
+				373E9C58298F6511007AB265 /* import_animal.h */,
+			);
+			path = node_defs;
+			sourceTree = "<group>";
+		};
+		373E9C5A298F6511007AB265 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				373E9C5B298F6511007AB265 /* casa_nodes.cpp */,
+				373E9C5C298F6511007AB265 /* imgui_impl_opengl3.cpp */,
+				373E9C5D298F6511007AB265 /* save_load_file.cpp */,
+				373E9C5E298F6511007AB265 /* tinyfiledialogs.c */,
+				373E9C5F298F6511007AB265 /* main.cpp */,
+				373E9C60298F6511007AB265 /* imgui_impl_sdl.cpp */,
+			);
+			path = src;
+			sourceTree = "<group>";
+		};
 		3779BA60292E7D1500AD8A46 = {
 			isa = PBXGroup;
 			children = (
-				373E9C49298F5C3B007AB265 /* casa_nodes.cpp */,
-				373E9C4A298F5C3C007AB265 /* node_defs */,
-				373E9C48298F5C3B007AB265 /* save_load_file.cpp */,
-				37D3D6702973043A007D195D /* tinyfiledialogs.c */,
-				37D3D6712973043B007D195D /* tinyfiledialogs.h */,
-				3763B35B2965B24000EBF9BB /* save_load_file.h */,
+				373E9C4D298F6511007AB265 /* include */,
+				373E9C5A298F6511007AB265 /* src */,
 				377E7442294A0543005615E4 /* internal.h */,
 				37F0DB0F2941655800DC7360 /* include */,
-				3779BA7A2933A57700AD8A46 /* node_defs */,
 				3779BA832936B54E00AD8A46 /* attribute.cpp */,
 				3779BA862936B54F00AD8A46 /* backend_io.cpp */,
 				3779BA842936B54E00AD8A46 /* builders.cpp */,
@@ -130,26 +166,18 @@
 				3779BA9D2936B56D00AD8A46 /* imgui_canvas.cpp */,
 				3779BAA72936B87600AD8A46 /* imgui_demo.cpp */,
 				3779BAAA2936B87600AD8A46 /* imgui_draw.cpp */,
-				3779BA772933A57600AD8A46 /* imgui_impl_opengl3.cpp */,
-				3779BA7B2933A57700AD8A46 /* imgui_impl_sdl.cpp */,
 				3779BA9E2936B56D00AD8A46 /* imgui_node_editor_api.cpp */,
-				37AE488A296B11F9005C4AD8 /* draw_triangle.h */,
 				3779BAA02936B56D00AD8A46 /* imgui_node_editor.cpp */,
 				3779BA8C2936B54F00AD8A46 /* imgui_stdlib.cpp */,
 				3779BAA82936B87600AD8A46 /* imgui_tables.cpp */,
 				3779BAA92936B87600AD8A46 /* imgui_widgets.cpp */,
 				3779BAA52936B65800AD8A46 /* imgui.cpp */,
 				3779BA872936B54F00AD8A46 /* internal.cpp */,
-				3779BA792933A57700AD8A46 /* main.cpp */,
 				3779BA8A2936B54F00AD8A46 /* node_registry.cpp */,
 				3779BA8F2936B54F00AD8A46 /* plano_api.cpp */,
 				3779BA892936B54F00AD8A46 /* widgets.cpp */,
-				3779BA752933A57600AD8A46 /* imgui_impl_opengl3_loader.h */,
-				3779BA7C2933A57700AD8A46 /* imgui_impl_opengl3.h */,
-				3779BA782933A57700AD8A46 /* imgui_impl_sdl.h */,
 				37E92CAF29466EB8000C77AB /* imgui_node_editor.h */,
 				37F0DB1029417F3900DC7360 /* imgui.h */,
-				3779BA762933A57600AD8A46 /* nodos_texture.h */,
 				3779BA73292E7D8500AD8A46 /* Frameworks */,
 				3779BA6A292E7D1500AD8A46 /* Products */,
 			);
@@ -223,34 +251,34 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				37188CD9296E22BD00D75781 /* main.cpp in Sources */,
 				37188CDA296E22BD00D75781 /* imgui_node_editor_api.cpp in Sources */,
+				373E9C66298F6511007AB265 /* imgui_impl_sdl.cpp in Sources */,
+				373E9C63298F6511007AB265 /* save_load_file.cpp in Sources */,
+				373E9C65298F6511007AB265 /* main.cpp in Sources */,
 				37188CDB296E22BD00D75781 /* plano_api.cpp in Sources */,
-				373E9C4C298F5C3C007AB265 /* casa_nodes.cpp in Sources */,
 				37188CDC296E22BD00D75781 /* draw_nodes.cpp in Sources */,
 				37188CDD296E22BD00D75781 /* handle_interactions.cpp in Sources */,
 				37188CDE296E22BD00D75781 /* imgui.cpp in Sources */,
-				373E9C4B298F5C3C007AB265 /* save_load_file.cpp in Sources */,
 				37188CDF296E22BD00D75781 /* crude_json.cpp in Sources */,
 				37188CE0296E22BD00D75781 /* example_property_im_draw.cpp in Sources */,
 				37188CE1296E22BD00D75781 /* imgui_draw.cpp in Sources */,
 				37188CE2296E22BD00D75781 /* imgui_stdlib.cpp in Sources */,
 				37188CE3296E22BD00D75781 /* imgui_node_editor.cpp in Sources */,
+				373E9C62298F6511007AB265 /* imgui_impl_opengl3.cpp in Sources */,
 				37188CE4296E22BD00D75781 /* widgets.cpp in Sources */,
 				37188CE5296E22BD00D75781 /* drawing.cpp in Sources */,
 				37188CE6296E22BD00D75781 /* internal.cpp in Sources */,
-				37188CE7296E22BD00D75781 /* imgui_impl_opengl3.cpp in Sources */,
 				37188CE8296E22BD00D75781 /* attribute.cpp in Sources */,
-				37188CE9296E22BD00D75781 /* imgui_impl_sdl.cpp in Sources */,
 				37188CEA296E22BD00D75781 /* imgui_demo.cpp in Sources */,
 				37188CEB296E22BD00D75781 /* frame.cpp in Sources */,
 				37188CEC296E22BD00D75781 /* node_registry.cpp in Sources */,
 				37188CED296E22BD00D75781 /* imgui_widgets.cpp in Sources */,
+				373E9C61298F6511007AB265 /* casa_nodes.cpp in Sources */,
 				37188CEE296E22BD00D75781 /* builders.cpp in Sources */,
 				37188CEF296E22BD00D75781 /* imgui_tables.cpp in Sources */,
 				37188CF0296E22BD00D75781 /* backend_io.cpp in Sources */,
 				37188CF1296E22BD00D75781 /* imgui_canvas.cpp in Sources */,
-				37D3D6722973043B007D195D /* tinyfiledialogs.c in Sources */,
+				373E9C64298F6511007AB265 /* tinyfiledialogs.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -329,6 +357,7 @@
 					"/opt/homebrew/include/**",
 					"../plano/**",
 					"../imgui-node-editor/**",
+					"include/**",
 				);
 				INCLUDED_RECURSIVE_SEARCH_PATH_SUBDIRECTORIES = "";
 				LIBRARY_SEARCH_PATHS = /opt/homebrew/lib;
@@ -394,6 +423,7 @@
 					"/opt/homebrew/include/**",
 					"../plano/**",
 					"../imgui-node-editor/**",
+					"include/**",
 				);
 				INCLUDED_RECURSIVE_SEARCH_PATH_SUBDIRECTORIES = "";
 				LIBRARY_SEARCH_PATHS = /opt/homebrew/lib;
