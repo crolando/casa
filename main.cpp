@@ -281,7 +281,6 @@ int main(int, char**)
         ImGui::NewFrame();
         
         // Menu bar
-
         if (ImGui::BeginMainMenuBar())
         {
             if (ImGui::BeginMenu("File"))
@@ -339,104 +338,8 @@ int main(int, char**)
             ImGui::EndMainMenuBar();
         }
         
-        // Draw modal window when the user chooses "load", but has unsaved changes.
-        // handle menu popups after menus are closed.
-        // see https://github.com/ocornut/imgui/issues/331
-        if(pstate.modal_save_challange_load)
-        {
-            pstate.modal_save_challange_load = false;
-            ImGui::OpenPopup("modal_save_challange_load");
-            // Always center this window when appearing
-            ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-            ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-        }
-        if (ImGui::BeginPopupModal("modal_save_challange_load", NULL, ImGuiWindowFlags_None))
-        {
-            ImGui::Text("Before you load a new project, would you like to save the current changes?");
-            if (ImGui::Button("Save First"))
-            {
-                // The logic for this is kind of spaghetti.  This will draw this frame, but will hit the save
-                // before the next frame.  The save always happens before loads, so it will chain the load
-                // after completing the save.
-                // Note that if waiting_on_save_dialog == true too, this will chain save  + load sequentially.
-                pstate.waiting_on_os_save_dialog = true; // This will draw this frame, but will hit the save before the next frame.  
-                pstate.waiting_on_os_load_dialog = true;
-                ImGui::CloseCurrentPopup(); // close challange
-                }
-            if (ImGui::Button("Ditch Project"))
-            {
-                pstate.waiting_on_os_load_dialog = true; // strictly not needed.
-                pstate.waiting_on_os_save_dialog = false;
-                ImGui::CloseCurrentPopup(); // close challange
-            }
-            ImGui::EndPopup();
-        }
+        handle_menu_state(pstate);
 
-        // Draw modal window when the user chooses "new", but has unsaved changes.
-        // handle menu popups after menus are closed.
-        // see https://github.com/ocornut/imgui/issues/331
-        if (pstate.modal_save_challange_new)
-        {
-            pstate.modal_save_challange_new = false;
-            ImGui::OpenPopup("modal_save_challange_new");
-            // Always center this window when appearing
-            ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-            ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-        }
-        if (ImGui::BeginPopupModal("modal_save_challange_new", NULL, ImGuiWindowFlags_None))
-        {
-            ImGui::Text("Before you create a new project, would you like to save the current changes?");
-            if (ImGui::Button("Save First"))
-            {
-                // The logic for this is kind of spaghetti.  This will draw this frame, but will hit the save
-                // before the next frame.  The save always happens before loads, so it will chain the load
-                // after completing the save.
-                pstate.waiting_on_os_save_dialog = true;
-                pstate.waiting_on_new = true;
-                ImGui::CloseCurrentPopup(); // close challange
-            }
-            if (ImGui::Button("Ditch Project"))
-            {
-                pstate.waiting_on_new = true; // strictly not needed.
-                pstate.waiting_on_os_save_dialog = false;
-                ImGui::CloseCurrentPopup(); // close challange
-            }
-            ImGui::EndPopup();
-        }
-
-        // Draw modal window when the user chooses "quit", but has unsaved changes.
-        // handle menu popups after menus are closed.
-        // see https://github.com/ocornut/imgui/issues/331
-        if (pstate.modal_save_challange_quit)
-        {
-            pstate.modal_save_challange_quit = false;
-            ImGui::OpenPopup("modal_save_challange_quit");
-            // Always center this window when appearing
-            ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-            ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-        }
-        if (ImGui::BeginPopupModal("modal_save_challange_quit", NULL, ImGuiWindowFlags_None))
-        {
-            ImGui::Text("Before you quit, would you like to save the current changes?");
-            if (ImGui::Button("Save First"))
-            {
-                // The logic for this is kind of spaghetti.  This will draw this frame, but will hit the save
-                // before the next frame.  The save always happens before loads, so it will chain the load
-                // after completing the save.
-                pstate.waiting_on_os_save_dialog = true;
-                pstate.waiting_on_quit = true;
-                ImGui::CloseCurrentPopup(); // close challange
-            }
-            if (ImGui::Button("Ditch Project"))
-            {
-                pstate.waiting_on_quit = true; // strictly not needed.
-                pstate.waiting_on_os_save_dialog = false;
-                ImGui::CloseCurrentPopup(); // close challange
-            }
-            ImGui::EndPopup();
-        }
-
-        
         // if we're in a dialog, don't let the user mess with stuff
         /*if(waiting_on_os_load_dialog || waiting_on_os_save_dialog) {
             SDL_SetWindowAlwaysOnTop(window, SDL_FALSE);

@@ -34,5 +34,6 @@ void load_project_file(const char* file_address);
 int save_project_file(const char* file_address);
 
 void handle_load_save_dialogs(plano_state_flags& pstate, const plano::types::ContextCallbacks& cbk);
+void handle_menu_state(plano_state_flags& pstate);
 
 #endif /* save_load_file_h */
