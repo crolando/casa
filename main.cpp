@@ -265,19 +265,24 @@ int main(int, char**)
         return -1;
     }
 
+    
+    // Load & Save States
+    bool waiting_on_os_save_dialog = false;   // true when an asyncronous, native file browser is visible to the user. Dialog is geared towards saving a project file.
+    bool modal_save_challange_load = false;   // true when the "do you want to save before you load" modal is visible. Triggered when "load" is requested with a dirty project.
+    bool waiting_on_os_load_dialog = false;   // true when an asyncronous, native file browser is visible to the user. Dialog is geared towards loading a project file.
+    bool just_loaded_ignore_dirty = false;    // ugly work-around for the situation where a load dirties the project. True when a load has just occured.
+    int frames_since_last_load = -1;          // ugly work-around for the situation where a load dirties the project. -1 means a load has not been triggered.
+    bool modal_save_challange_new = false;    // true when the "do you want to save before you create a new project" modal is visible. Triggered when "new" is requested with a dirty project.
+    bool waiting_on_new = false;              // true when a new project needs to be created.  This is a little silly but it re-uses the pattern for the other project handlers.
+    bool modal_save_challange_quit = false;   // true when the "do you want to save before you quit" modal is visible. Triggered when "quit" is requested with a dirty project.
+    bool waiting_on_quit = false;             // true when a quit is requested by the menu.  Tracking it this way allows us to handle edge cases like when a user goes to quit then indecisively cancels a save challange. 
+
+    // handle load/save child processes
+    std::future<char*> load_file_future, save_file_future;
+    static const char *filter_extensions[1] = {"*.csa"};
+
     // Main draw loop
     bool done = false;
-    bool waiting_on_save_dialog = false;
-    bool waiting_on_load_dialog = false;
-    bool just_loaded_ignore_dirty = false;
-    int frames_since_last_load = -1; // -1 means a load has not been triggered.
-    bool savechallange_new = false;
-    bool waiting_on_new = false; 
-    bool savechallange_quit = false;
-    bool waiting_on_quit = false;
-    std::future<char*> load_file_future, save_file_future;
-    // handle load/save child processes
-    static const char *filter_extensions[1] = {"*.csa"};
     while (!done)
     {
         // Poll and handle events (inputs, window resize, etc.)
@@ -296,18 +301,14 @@ int main(int, char**)
             
         }
         
-        // This bool tracks the "You told me to load, but you have unsaved changes" modal.
-        // deferred modal popup bool.  see https://github.com/ocornut/imgui/issues/331
-        static bool savechallange_load = false; // initialize with false. this does not do an assignment every frame.
         
         // Save dialog handling.  This spawns a new window, so it does some parallel processing stuff
         // Save / load behavior is complex to handle the case where you choose "load", but you have unsaved changes.
-        if (waiting_on_save_dialog)
         {
             // Launch the save dialog
             if(!save_file_future.valid())
+        if (waiting_on_os_save_dialog)
             {
-                save_file_future = std::async(tinyfd_saveFileDialog,"Save the Casa Project",nullptr, 1, filter_extensions, "Casa Project");
             }
             // Wait until the save dialog interactions are done.
             if(is_ready(save_file_future))
@@ -319,27 +320,27 @@ int main(int, char**)
                 } else {
                     // Save was cancelled in the save dialog
 
-                    // Safety - do not quit immediately after cancelling a save dialog during a savechallange_quit
+                    // Safety - do not quit immediately after cancelling a save dialog during a modal_save_challange_quit
                     if (waiting_on_quit)
                         waiting_on_quit = false;
                 }
                 // Book keeping
-                waiting_on_save_dialog = false;
-                if(savechallange_load){
                     ImGui::CloseCurrentPopup();
-                    savechallange_load = false;
+                waiting_on_os_save_dialog = false;
+                if(modal_save_challange_load){
+                    modal_save_challange_load = false;  // No longer  
                 }
 
-                if (savechallange_new) {
+                if (modal_save_challange_new) {
                     ImGui::CloseCurrentPopup();
-                    savechallange_new = false;
+                    modal_save_challange_new = false;
                 }
 
             }
         }
 
         // Load dialog handling.  This spawns a new window, so it does some parallel processing stuff
-        if (waiting_on_load_dialog && !waiting_on_save_dialog)
+        if (waiting_on_os_load_dialog && !waiting_on_os_save_dialog) 
         {
             if(!load_file_future.valid())
             {
@@ -363,12 +364,12 @@ int main(int, char**)
                     ; // load cancelled in UI
                 }
                 // Book keeping
-                waiting_on_load_dialog = false;
+                waiting_on_os_load_dialog = false;
             }
         }
 
         // New handling.  This creates a new project.
-        if (waiting_on_new && !waiting_on_save_dialog)
+        if (waiting_on_new && !waiting_on_os_save_dialog)
         {
             context_a = plano::api::CreateContext(cbk, "../plano/data/");
             plano::api::SetContext(context_a);
@@ -379,7 +380,7 @@ int main(int, char**)
         }
 
         // Quit handling.  This quits.
-        if (waiting_on_quit && !waiting_on_save_dialog)
+        if (waiting_on_quit && !waiting_on_os_save_dialog)
         {
             done = true;
             // Book keeping
@@ -416,7 +417,7 @@ int main(int, char**)
             {
                 if (ImGui::MenuItem("New")) {
                     if (plano::api::IsProjectDirty()) {
-                        savechallange_new = true;
+                        modal_save_challange_new = true;
                     } else {
                         waiting_on_new = true;
                     }
@@ -424,7 +425,7 @@ int main(int, char**)
                 if (ImGui::MenuItem("Load"))
                 {
                     if (plano::api::GetContext() == nullptr) {
-                        waiting_on_load_dialog = true;
+                        waiting_on_os_load_dialog = true; // When you load with a blank context, just load.
                     } else {
                         // if a load was requested, but the current session is not saved... it must trigger a save challange.
                         // but because loading a file causes a dirty flag change, ignore it.
@@ -432,9 +433,9 @@ int main(int, char**)
                         {
                             // defer popup to resolve popup stack issues
                             // see https://github.com/ocornut/imgui/issues/331
-                            savechallange_load = true;
+                            modal_save_challange_load = true; // If the project is dirty, do a save challange.
                         } else {
-                            waiting_on_load_dialog = true;
+                            waiting_on_os_load_dialog = true; // if the project isn't dirty, just spawn the load dialog. 
                         }
                     }
                 }
@@ -450,7 +451,7 @@ int main(int, char**)
                 if (ImGui::MenuItem("Quit")) {
                     if (plano::api::IsProjectDirty())
                     {                        
-                        savechallange_quit = true;                        
+                        modal_save_challange_quit = true;                        
                     } else {
                         done = true;
                     }
@@ -463,15 +464,15 @@ int main(int, char**)
         // Draw modal window when the user chooses "load", but has unsaved changes.
         // handle menu popups after menus are closed.
         // see https://github.com/ocornut/imgui/issues/331
-        if(savechallange_load)
+        if(modal_save_challange_load)
         {
-            savechallange_load = false;
-            ImGui::OpenPopup("SaveChallange_load");
+            modal_save_challange_load = false;
+            ImGui::OpenPopup("modal_save_challange_load");
             // Always center this window when appearing
             ImVec2 center = ImGui::GetMainViewport()->GetCenter();
             ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
         }
-        if (ImGui::BeginPopupModal("SaveChallange_load", NULL, ImGuiWindowFlags_None))
+        if (ImGui::BeginPopupModal("modal_save_challange_load", NULL, ImGuiWindowFlags_None))
         {
             ImGui::Text("Before you load a new project, would you like to save the current changes?");
             if (ImGui::Button("Save First"))
@@ -479,15 +480,15 @@ int main(int, char**)
                 // The logic for this is kind of spaghetti.  This will draw this frame, but will hit the save
                 // before the next frame.  The save always happens before loads, so it will chain the load
                 // after completing the save.
-                waiting_on_save_dialog = true;
                 // Note that if waiting_on_save_dialog == true too, this will chain save  + load sequentially.
-                waiting_on_load_dialog = true;
+                waiting_on_os_save_dialog = true; // This will draw this frame, but will hit the save before the next frame.  
+                waiting_on_os_load_dialog = true;
                 ImGui::CloseCurrentPopup(); // close challange
                 }
             if (ImGui::Button("Ditch Project"))
             {
-                waiting_on_load_dialog = true; // strictly not needed.
-                waiting_on_save_dialog = false;
+                waiting_on_os_load_dialog = true; // strictly not needed.
+                waiting_on_os_save_dialog = false;
                 ImGui::CloseCurrentPopup(); // close challange
             }
             ImGui::EndPopup();
@@ -496,15 +497,15 @@ int main(int, char**)
         // Draw modal window when the user chooses "new", but has unsaved changes.
         // handle menu popups after menus are closed.
         // see https://github.com/ocornut/imgui/issues/331
-        if (savechallange_new)
+        if (modal_save_challange_new)
         {
-            savechallange_new = false;
-            ImGui::OpenPopup("SaveChallange_new");
+            modal_save_challange_new = false;
+            ImGui::OpenPopup("modal_save_challange_new");
             // Always center this window when appearing
             ImVec2 center = ImGui::GetMainViewport()->GetCenter();
             ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
         }
-        if (ImGui::BeginPopupModal("SaveChallange_new", NULL, ImGuiWindowFlags_None))
+        if (ImGui::BeginPopupModal("modal_save_challange_new", NULL, ImGuiWindowFlags_None))
         {
             ImGui::Text("Before you create a new project, would you like to save the current changes?");
             if (ImGui::Button("Save First"))
@@ -512,14 +513,14 @@ int main(int, char**)
                 // The logic for this is kind of spaghetti.  This will draw this frame, but will hit the save
                 // before the next frame.  The save always happens before loads, so it will chain the load
                 // after completing the save.
-                waiting_on_save_dialog = true;
+                waiting_on_os_save_dialog = true;
                 waiting_on_new = true;
                 ImGui::CloseCurrentPopup(); // close challange
             }
             if (ImGui::Button("Ditch Project"))
             {
                 waiting_on_new = true; // strictly not needed.
-                waiting_on_save_dialog = false;
+                waiting_on_os_save_dialog = false;
                 ImGui::CloseCurrentPopup(); // close challange
             }
             ImGui::EndPopup();
@@ -528,15 +529,15 @@ int main(int, char**)
         // Draw modal window when the user chooses "quit", but has unsaved changes.
         // handle menu popups after menus are closed.
         // see https://github.com/ocornut/imgui/issues/331
-        if (savechallange_quit)
+        if (modal_save_challange_quit)
         {
-            savechallange_quit = false;
-            ImGui::OpenPopup("SaveChallange_quit");
+            modal_save_challange_quit = false;
+            ImGui::OpenPopup("modal_save_challange_quit");
             // Always center this window when appearing
             ImVec2 center = ImGui::GetMainViewport()->GetCenter();
             ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
         }
-        if (ImGui::BeginPopupModal("SaveChallange_quit", NULL, ImGuiWindowFlags_None))
+        if (ImGui::BeginPopupModal("modal_save_challange_quit", NULL, ImGuiWindowFlags_None))
         {
             ImGui::Text("Before you quit, would you like to save the current changes?");
             if (ImGui::Button("Save First"))
@@ -544,14 +545,14 @@ int main(int, char**)
                 // The logic for this is kind of spaghetti.  This will draw this frame, but will hit the save
                 // before the next frame.  The save always happens before loads, so it will chain the load
                 // after completing the save.
-                waiting_on_save_dialog = true;
+                waiting_on_os_save_dialog = true;
                 waiting_on_quit = true;
                 ImGui::CloseCurrentPopup(); // close challange
             }
             if (ImGui::Button("Ditch Project"))
             {
                 waiting_on_quit = true; // strictly not needed.
-                waiting_on_save_dialog = false;
+                waiting_on_os_save_dialog = false;
                 ImGui::CloseCurrentPopup(); // close challange
             }
             ImGui::EndPopup();
@@ -559,7 +560,7 @@ int main(int, char**)
 
         
         // if we're in a dialog, don't let the user mess with stuff
-        /*if(waiting_on_load_dialog || waiting_on_save_dialog) {
+        /*if(waiting_on_os_load_dialog || waiting_on_os_save_dialog) {
             SDL_SetWindowAlwaysOnTop(window, SDL_FALSE);
             SDL_SetWindowKeyboardGrab(window, SDL_FALSE);
         } else {
