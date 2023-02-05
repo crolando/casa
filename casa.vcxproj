@@ -41,21 +41,21 @@
     <ClCompile Include="..\plano\src\node_registry.cpp" />
     <ClCompile Include="..\plano\src\plano_api.cpp" />
     <ClCompile Include="..\plano\src\widgets.cpp" />
-    <ClCompile Include="imgui_impl_opengl3.cpp" />
-    <ClCompile Include="imgui_impl_sdl.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="casa_nodes.cpp" />
-    <ClCompile Include="save_load_file.cpp" />
-    <ClCompile Include="tinyfiledialogs.c" />
+    <ClCompile Include="src\casa_nodes.cpp" />
+    <ClCompile Include="src\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="src\imgui_impl_sdl.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\save_load_file.cpp" />
+    <ClCompile Include="src\tinyfiledialogs.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\plano\include\node_defs\plano_nodes.h" />
-    <ClInclude Include="draw_triangle.h" />
-    <ClInclude Include="imgui_impl_opengl3.h" />
-    <ClInclude Include="imgui_impl_opengl3_loader.h" />
-    <ClInclude Include="imgui_impl_sdl.h" />
-    <ClInclude Include="nodos_texture.h" />
-    <ClInclude Include="save_load_file.h" />
+    <ClInclude Include="include\draw_triangle.h" />
+    <ClInclude Include="include\imgui_impl_opengl3.h" />
+    <ClInclude Include="include\imgui_impl_opengl3_loader.h" />
+    <ClInclude Include="include\imgui_impl_sdl.h" />
+    <ClInclude Include="include\nodos_texture.h" />
+    <ClInclude Include="include\save_load_file.h" />
+    <ClInclude Include="include\tinyfiledialogs.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -117,12 +117,12 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>..\plano\include;..\imgui-node-editor\external\imgui;..\imgui-node-editor;..\SDL2-2.0.22\include;..\glew-2.1.0\include;$(IncludePath)</IncludePath>
+    <IncludePath>..\plano\include;..\imgui-node-editor\external\imgui;..\imgui-node-editor;..\SDL2-2.0.22\include;include;..\glew-2.1.0\include;$(IncludePath)</IncludePath>
     <LibraryPath>C:\work\code\SDL2-2.0.22\lib\x64;C:\work\code\glew-2.1.0\lib\Release\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>..\plano\include;..\imgui-node-editor\external\imgui;..\imgui-node-editor;..\SDL2-2.0.22\include;..\glew-2.1.0\include;$(IncludePath)</IncludePath>
+    <IncludePath>..\plano\include;..\imgui-node-editor\external\imgui;..\imgui-node-editor;..\SDL2-2.0.22\include;include;..\glew-2.1.0\include;$(IncludePath)</IncludePath>
     <LibraryPath>C:\work\code\SDL2-2.0.22\lib\x64;C:\work\code\glew-2.1.0\lib\Release\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
