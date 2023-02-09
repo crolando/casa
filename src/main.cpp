@@ -400,6 +400,12 @@ int main(int, char**)
         SDL_GL_SwapWindow(window);
         
     } // End of draw loop.  Shutdown requested beyond here...
+    if(pstate.context_a != nullptr)
+    {
+        plano::api::DestroyContext(pstate.context_a);
+        pstate.context_a = nullptr;
+    }
+        
     // Cleanup
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL2_Shutdown();
