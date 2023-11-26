@@ -186,6 +186,13 @@ int main(int, char**)
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     ImGui::StyleColorsDark(); // Setup Dear ImGui style
+
+    // Load font
+    ImFontConfig font_config;
+    font_config.OversampleH = 2;
+    font_config.OversampleV = 2;
+
+    auto font_a = io.Fonts->AddFontFromFileTTF("data\\DroidSansMonoSlashed.ttf", 18.0f, &font_config);
     
     // Setup Platform/Renderer backends
     ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
